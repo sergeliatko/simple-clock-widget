@@ -11,7 +11,7 @@
  * Plugin Name: Simple Clock Widget
  * Plugin URI:
  * Description: Adds simple widget to display local time on your site.
- * Version:     0.0.1
+ * Version:     1.0.0
  * Author:      Serge Liatko
  * Author URI:  https://sergeliatko.com
  * Text Domain: simple-clock-widget
