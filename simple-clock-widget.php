@@ -40,13 +40,21 @@ class SimpleClockWidgetPlugin {
 	protected function __construct() {
 		add_action( 'init', array( $this, 'load_text_domain' ), 10, 0 );
 		add_action( 'widgets_init', array( $this, 'register_widget' ), 10, 0 );
+		add_action( 'wp_ajax_simple_clock_get_timestamp', array(
+			'SimpleClockWidgetPlugin',
+			'handleAjaxRequest',
+		), 10, 0 );
+		add_action( 'wp_ajax_nopriv_simple_clock_get_timestamp', array(
+			'SimpleClockWidgetPlugin',
+			'handleAjaxRequest',
+		), 10, 0 );
 	}
 
 	/**
 	 * @return \SimpleClockWidgetPlugin
 	 */
 	public static function getInstance() {
-		if ( ! ( self::$instance instanceof SimpleClockWidgetPlugin ) ) {
+		if ( !( self::$instance instanceof SimpleClockWidgetPlugin ) ) {
 			self::setInstance( new self() );
 		}
 
@@ -58,6 +66,13 @@ class SimpleClockWidgetPlugin {
 	 */
 	public static function setInstance( $instance ) {
 		self::$instance = $instance;
+	}
+
+	/**
+	 * Send current timestamp as json response.
+	 */
+	public static function handleAjaxRequest() {
+		wp_send_json_success( current_time( 'timestamp' ), 200 );
 	}
 
 	/**

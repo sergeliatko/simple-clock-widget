@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpUnused */
 
 /**
  * Class SimpleClockWidget
@@ -19,7 +20,7 @@ class SimpleClockWidget extends WP_Widget {
 			'clock',
 			__( 'Clock', 'simple-clock-widget' ),
 			array(
-				'description' => __( 'Displays local time as a widget.', 'simple-clock-widget' )
+				'description' => __( 'Displays local time as a widget.', 'simple-clock-widget' ),
 			)
 		);
 		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue_scripts' ), 10, 0 );
@@ -45,8 +46,9 @@ class SimpleClockWidget extends WP_Widget {
 				true
 			);
 			wp_localize_script( 'clock-widget', 'clockWidget', array(
-				'timestamp' => current_time( 'timestamp' ),
-				'language'  => substr( get_bloginfo( 'language' ), 0, 2 )
+				'language' => substr( get_bloginfo( 'language' ), 0, 2 ),
+				'action'   => 'simple_clock_get_timestamp',
+				'url'      => admin_url( 'admin-ajax.php' ),
 			) );
 			wp_add_inline_style(
 				sanitize_title_with_dashes( wp_get_theme()->get( 'Name' ) ),
@@ -107,24 +109,25 @@ class SimpleClockWidget extends WP_Widget {
 			array(
 				'time_format' => get_option( 'time_format' ),
 				'date_format' => get_option( 'date_format' ),
-				'hide_date'   => null
+				'hide_date'   => null,
 			)
 		);
 		$attributes = array();
 		$map        = array(
 			'time_format' => 'data-time-format',
 			'date_format' => 'data-date-format',
-			'hide_date'   => 'data-hide-date'
+			'hide_date'   => 'data-hide-date',
 		);
 		foreach ( $map as $key => $data ) {
 			$attributes[ $data ] = isset( $instance[ $key ] ) ? $instance[ $key ] : null;
 		}
 		echo $args['before_widget'];
-		if ( ! empty( $instance['title'] ) ) {
+		if ( !empty( $instance['title'] ) ) {
 			echo $args['before_title']
 			     . apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base )
 			     . $args['after_title'];
 		}
+		/** @noinspection HtmlUnknownAttribute */
 		printf(
 			'<div class="%1$s" %2$s></div>',
 			'clock-widget',
@@ -144,7 +147,7 @@ class SimpleClockWidget extends WP_Widget {
 			'title'       => array( 'sanitize_text_field' ),
 			'time_format' => array( 'sanitize_text_field' ),
 			'date_format' => array( 'sanitize_text_field' ),
-			'hide_date'   => array( 'sanitize_text_field' )
+			'hide_date'   => array( 'sanitize_text_field' ),
 		);
 		$instance = array();
 		foreach ( $keys as $key => $callbacks ) {
@@ -161,6 +164,7 @@ class SimpleClockWidget extends WP_Widget {
 	 * @return string
 	 */
 	public function form( $instance ) {
+		/** @noinspection HtmlUnknownAttribute */
 		echo join( '', array(
 			sprintf(
 				'<p><label for="%1$s">%5$s <input type="text" id="%1$s" name="%2$s" class="%3$s" value="%4$s" /></label></p>',
@@ -190,9 +194,9 @@ class SimpleClockWidget extends WP_Widget {
 				'<p><label for="%1$s"><input type="checkbox" id="%1$s" name="%2$s" value="1" %3$s /> %4$s</label></p>',
 				$this->get_field_id( 'hide_date' ),
 				$this->get_field_name( 'hide_date' ),
-				checked( true, ! empty( $instance['hide_date'] ), false ),
+				checked( true, !empty( $instance['hide_date'] ), false ),
 				__( 'Do not display date', 'simple-clock-widget' )
-			)
+			),
 		) );
 
 		return '';
@@ -220,7 +224,10 @@ class SimpleClockWidget extends WP_Widget {
 	protected function sprint_attributes( $attributes = array() ) {
 		$attributes = (array) $attributes;
 
-		return join( ' ', array_map( array( $this, 'sprint_attribute' ), array_keys( $attributes ), $attributes ) );
+		return join( ' ', array_map( array(
+			$this,
+			'sprint_attribute',
+		), array_keys( $attributes ), $attributes ) );
 	}
 
 	/**
